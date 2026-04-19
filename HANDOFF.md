@@ -11,11 +11,14 @@ Estado al cierre de sesión (2026-04-19, modo hand-off autonomous).
 | Capture Insight | `ijuXnNIve1w6zgaA` | `/webhook/insight-capture` | ✅ activo |
 | Daily Synthesis | `gRFz89asdA5p5llu` | `/webhook/insight-synthesis` | ✅ activo |
 
-**Smoke test pasado:**
+**Smoke test pasado** (`scripts/test-webhooks.sh`):
 - Capture → Claude Sonnet 4.6 clasifica bien (test: "prompt caching" → ZENTI 9/10, categoría ai-tech, prioridad alta)
 - Synthesis → Claude Opus 4.7 sintetiza con estructura correcta
 
-Ejecuta `bash scripts/test-webhooks.sh` para re-verificar.
+**Vault poblado con 3 insights reales** + 1 síntesis del día. Abre Obsidian y ve:
+- `CAPTURE/Daily-Inbox.md` con 3 entradas
+- `INSIGHTS/ai-tech/` y `INSIGHTS/product/` con archivos detallados
+- `SYNTHESIS/2026-04-19-sintesis.md` con Top 3 + impacto ZENTI + Charly + acciones
 
 ### Obsidian vault
 ```
@@ -72,6 +75,25 @@ Con 15 insights/día + 1 síntesis: **~$7/mes**. Dentro del budget del stack.
    Si cambias a Sonnet 4.6 / Opus 4.7 updates, editar en `n8n/*.json` y correr `scripts/deploy-n8n.sh`.
 
 3. **Credencial Anthropic:** ID `Ivm68Ihk87si9DBJ` (nombre `Anthropic account`). Hardcoded en los JSONs del repo. Si rotas la key en n8n cloud, esto sigue funcionando mientras el ID no cambie.
+
+## 🛡️ Hardening aplicado (vía Gemini QA)
+
+Gemini auditó ambos workflows y encontró 14 issues. Aplicados ahora:
+
+- **CRITICAL** Retry on failure en los 2 HTTP Request → `retryOnFail=true, maxTries=3, waitBetweenTries=2-3s`
+- **HIGH** Prompt injection guard: el contenido del usuario se envuelve en `<user_note>...</user_note>` con instrucción explícita a Claude de no seguir instrucciones contenidas en él
+- **HIGH** Parser JSON robusto: extrae de primer `{` a último `}`, tolera fences/texto envolvente; fallback con shape garantizada
+- **MEDIUM** Colisión de filenames: ahora el slug incluye segundos (`{fecha}-{slug}-{ss}.md`), evita sobreescritura cuando capturas 2 insights con título similar el mismo minuto
+- **LOW** Slug ASCII: `normalize('NFD')` + strip accents → evita issues de iCloud sync con ñ/acentos
+- **LOW** Title sanitize: reemplaza `"` por `'` → evita YAML frontmatter corrupto
+
+## 📋 Known issues pendientes (no bloquean prueba)
+
+- **HIGH** Synthesis puede tardar >30s (Opus). iOS Shortcut default timeout ~60s, debería estar ok. Si da timeout: cambiar `responseMode` a `onReceived` y push notification async.
+- **MEDIUM** Webhook sin auth token: cualquiera que adivine la URL puede consumir tus créditos Anthropic. Mitigar con header `X-Auth-Token` en el webhook y validación (requiere también actualizar el Shortcut).
+- **MEDIUM** Sin límite de tokens para inbox: si un día acumulas >150k chars, la llamada a Opus fallará. Baja probabilidad (serían ~500 insights/día). Fix: clipear `inboxContent` a 100k chars en `Parse Inbox`.
+- **LOW** Modelos hardcoded con fecha (`claude-sonnet-4-20250514`). Alias `claude-sonnet-4-latest` serían más durables si Anthropic los publica.
+- **LOW** Timestamp de server n8n (UTC, no hora chilena). Si quieres hora local, el Shortcut debe mandar `localTime` en el body.
 
 ## 🎯 Siguiente iteración (futuro)
 
