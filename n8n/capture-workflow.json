@@ -1,0 +1,98 @@
+{
+  "name": "Research Power Stack - Capture Insight",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "insight-capture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook (iOS Shortcut)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 300],
+      "webhookId": "insight-capture"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst url = body.url || '';\nconst userNote = body.note || body.text || '';\nconst sharedTitle = body.title || '';\n\nlet platform = 'web';\nif (/youtu\\.?be/i.test(url)) platform = 'youtube';\nelse if (/instagram\\.com/i.test(url)) platform = 'instagram';\nelse if (/tiktok\\.com/i.test(url)) platform = 'tiktok';\nelse if (/twitter\\.com|x\\.com/i.test(url)) platform = 'twitter';\nelse if (/linkedin\\.com/i.test(url)) platform = 'linkedin';\n\nconst now = new Date();\nconst iso = now.toISOString();\nconst date = iso.split('T')[0];\nconst time = iso.split('T')[1].substring(0, 5);\n\nreturn [{\n  json: {\n    url,\n    userNote,\n    sharedTitle,\n    platform,\n    capturedAt: iso,\n    date,\n    time\n  }\n}];"
+      },
+      "name": "Parse Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "create",
+        "modelId": {
+          "__rl": true,
+          "value": "claude-sonnet-4-6",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Clasifica este insight capturado desde móvil para el Research Power Stack de Diego (ZENTI + Charly.io).\n\n**URL:** {{$json.url}}\n**Plataforma:** {{$json.platform}}\n**Título compartido:** {{$json.sharedTitle}}\n**Nota del usuario:** {{$json.userNote}}\n\nDevuelve SOLO JSON válido (sin markdown, sin ```json):\n{\n  \"title\": \"título conciso 5-8 palabras\",\n  \"category\": \"ai-tech | fundraising | product | growth | sales | ops | leadership | otro\",\n  \"relevance\": {\n    \"zenti\": 0-10,\n    \"charly\": 0-10\n  },\n  \"summary\": \"2-3 frases sobre la idea central\",\n  \"keyPoints\": [\"punto 1\", \"punto 2\", \"punto 3\"],\n  \"actionable\": \"acción concreta en 1 frase, o 'solo-referencia' si no aplica\",\n  \"tags\": [\"#tag1\", \"#tag2\", \"#tag3\"],\n  \"priority\": \"alta | media | baja\"\n}\n\nContexto de proyectos:\n- **ZENTI**: sistema multi-agente AI para evaluar propuestas CORFO/ANID/BID. Stack: n8n + Claude + RAG pgvector.\n- **Charly.io**: SaaS B2B para gestión de programas de aceleración en LATAM."
+            }
+          ]
+        },
+        "options": {
+          "maxTokensToSample": 1024,
+          "temperature": 0.3
+        }
+      },
+      "name": "Claude Classify",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [540, 300],
+      "credentials": {
+        "anthropicApi": {
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('Parse Input').first().json;\nconst raw = $input.first().json.content?.[0]?.text || $input.first().json.message?.content || $input.first().json.output || '';\n\nlet parsed;\ntry {\n  const cleaned = raw.replace(/^```json\\s*|```\\s*$/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = {\n    title: input.sharedTitle || 'Insight sin título',\n    category: 'otro',\n    relevance: { zenti: 0, charly: 0 },\n    summary: input.userNote || 'No se pudo clasificar',\n    keyPoints: [],\n    actionable: 'solo-referencia',\n    tags: ['#sin-clasificar'],\n    priority: 'baja'\n  };\n}\n\nconst slug = parsed.title.toLowerCase()\n  .replace(/[^a-z0-9áéíóúñ\\s-]/g, '')\n  .replace(/\\s+/g, '-')\n  .substring(0, 50);\n\nconst filename = `${input.date}-${slug}.md`;\nconst filepath = `INSIGHTS/${parsed.category}/${filename}`;\n\nconst inboxEntry = `\n### ${parsed.title}\n- **Hora:** ${input.time}\n- **Fuente:** [${input.platform}](${input.url})\n- **Categoría:** ${parsed.category} | **Prioridad:** ${parsed.priority}\n- **Relevancia:** ZENTI ${parsed.relevance.zenti}/10 · Charly ${parsed.relevance.charly}/10\n- **Resumen:** ${parsed.summary}\n- **Acción:** ${parsed.actionable}\n- **Tags:** ${parsed.tags.join(' ')}\n- [[${filepath}|Ver detalle]]\n`;\n\nconst insightMd = `---\ntitle: \"${parsed.title}\"\ndate: ${input.date}\ntime: ${input.time}\nsource: ${input.url}\nplatform: ${input.platform}\ncategory: ${parsed.category}\npriority: ${parsed.priority}\nrelevance_zenti: ${parsed.relevance.zenti}\nrelevance_charly: ${parsed.relevance.charly}\ntags: [${parsed.tags.map(t => `\"${t.replace('#','')}\"`).join(', ')}]\n---\n\n# ${parsed.title}\n\n> **Fuente:** [${input.platform}](${input.url})  \n> **Capturado:** ${input.date} ${input.time}\n\n## Resumen\n${parsed.summary}\n\n## Puntos Clave\n${parsed.keyPoints.map(p => `- ${p}`).join('\\n')}\n\n## Acción Propuesta\n${parsed.actionable}\n\n## Nota Original\n${input.userNote || '_sin nota adicional_'}\n\n## Conexiones\n- Relevancia ZENTI: ${parsed.relevance.zenti}/10\n- Relevancia Charly.io: ${parsed.relevance.charly}/10\n- Categoría: #${parsed.category}\n\n${parsed.tags.join(' ')}\n`;\n\nreturn [{\n  json: {\n    status: 'ok',\n    title: parsed.title,\n    category: parsed.category,\n    priority: parsed.priority,\n    zentiRelevance: parsed.relevance.zenti,\n    charlyRelevance: parsed.relevance.charly,\n    filename,\n    filepath,\n    inboxEntry,\n    insightMd\n  }\n}];"
+      },
+      "name": "Format Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "name": "Respond to Shortcut",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (iOS Shortcut)": {
+      "main": [[{ "node": "Parse Input", "type": "main", "index": 0 }]]
+    },
+    "Parse Input": {
+      "main": [[{ "node": "Claude Classify", "type": "main", "index": 0 }]]
+    },
+    "Claude Classify": {
+      "main": [[{ "node": "Format Output", "type": "main", "index": 0 }]]
+    },
+    "Format Output": {
+      "main": [[{ "node": "Respond to Shortcut", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
