@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst inboxContent = body.inbox || body.text || '';\nconst date = body.date || new Date().toISOString().split('T')[0];\n\nreturn [{\n  json: {\n    inboxContent,\n    date,\n    length: inboxContent.length\n  }\n}];"
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst inboxContent = body.inbox || body.text || '';\nconst date = body.date || new Date().toISOString().split('T')[0];\n\nconst prompt = `Eres el analista estratégico de Diego (founder de ZENTI y Charly.io).\\n\\nAnaliza TODOS los insights capturados el ${date} y genera una SÍNTESIS DIARIA accionable.\\n\\n# INSIGHTS DEL DÍA\\n\\n${inboxContent}\\n\\n# TU TAREA\\n\\nGenera la síntesis en markdown con esta estructura EXACTA:\\n\\n---\\n\\n## 🎯 Top 3 Insights del Día\\n\\nLos 3 insights MÁS relevantes (por score combinado ZENTI+Charly) con:\\n- Título\\n- Por qué importa\\n- Acción concreta\\n\\n## 🚀 Impacto en ZENTI\\n\\nInsights que aplican a ZENTI (evaluador de propuestas CORFO/ANID/BID):\\n- Lista bullet con oportunidades\\n- ¿Qué cambios específicos al producto sugieren?\\n- ¿Algún competidor/tech que investigar?\\n\\n## 📈 Impacto en Charly.io\\n\\nInsights que aplican a Charly.io (SaaS aceleradoras LATAM):\\n- Growth hacks aplicables\\n- Benchmarks SaaS relevantes\\n- Decisiones de pricing/product\\n\\n## 🔗 Conexiones Cruzadas\\n\\n¿Hay patrones entre los insights? ¿Temas recurrentes? ¿Ideas que se complementan?\\n\\n## ⚡ Acciones para Esta Semana\\n\\n3-5 acciones concretas derivadas de los insights, priorizadas. Formato:\\n- [ ] Acción (proyecto afectado) — esfuerzo estimado\\n\\n## 🗑️ Descartar\\n\\nInsights de baja relevancia que no merecen seguimiento (si los hay).\\n\\n---\\n\\nSé DIRECTO. Sin relleno. Diego tiene 10 minutos para leer esto.`;\n\nreturn [{\n  json: {\n    inboxContent,\n    date,\n    length: inboxContent.length,\n    prompt\n  }\n}];"
       },
       "name": "Parse Inbox",
       "type": "n8n-nodes-base.code",
@@ -25,38 +25,36 @@
     },
     {
       "parameters": {
-        "resource": "message",
-        "operation": "create",
-        "modelId": {
-          "__rl": true,
-          "value": "claude-opus-4-7",
-          "mode": "list"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Eres el analista estratégico de Diego (founder de ZENTI y Charly.io).\n\nAnaliza TODOS los insights capturados el {{$json.date}} y genera una SÍNTESIS DIARIA accionable.\n\n# INSIGHTS DEL DÍA\n\n{{$json.inboxContent}}\n\n# TU TAREA\n\nGenera la síntesis en markdown con esta estructura EXACTA:\n\n---\n\n## 🎯 Top 3 Insights del Día\n\nLos 3 insights MÁS relevantes (por score combinado ZENTI+Charly) con:\n- Título\n- Por qué importa\n- Acción concreta\n\n## 🚀 Impacto en ZENTI\n\nInsights que aplican a ZENTI (evaluador de propuestas CORFO/ANID/BID):\n- Lista bullet con oportunidades\n- ¿Qué cambios específicos al producto sugieren?\n- ¿Algún competidor/tech que investigar?\n\n## 📈 Impacto en Charly.io\n\nInsights que aplican a Charly.io (SaaS aceleradoras LATAM):\n- Growth hacks aplicables\n- Benchmarks SaaS relevantes\n- Decisiones de pricing/product\n\n## 🔗 Conexiones Cruzadas\n\n¿Hay patrones entre los insights? ¿Temas recurrentes? ¿Ideas que se complementan?\n\n## ⚡ Acciones para Esta Semana\n\n3-5 acciones concretas derivadas de los insights, priorizadas. Formato:\n- [ ] Acción (proyecto afectado) — esfuerzo estimado\n\n## 🗑️ Descartar\n\nInsights de baja relevancia que no merecen seguimiento (si los hay).\n\n---\n\nSé DIRECTO. Sin relleno. Diego tiene 10 minutos para leer esto."
-            }
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "anthropic-version", "value": "2023-06-01"},
+            {"name": "content-type", "value": "application/json"}
           ]
         },
-        "options": {
-          "maxTokensToSample": 4096,
-          "temperature": 0.4
-        }
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-opus-4-20250514\",\n  \"max_tokens\": 4096,\n  \"temperature\": 0.4,\n  \"messages\": [{\"role\": \"user\", \"content\": {{JSON.stringify($json.prompt)}}}]\n}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "options": {}
       },
       "name": "Claude Synthesize",
-      "type": "@n8n/n8n-nodes-langchain.anthropic",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [540, 300],
       "credentials": {
         "anthropicApi": {
-          "name": "Anthropic"
+          "id": "Ivm68Ihk87si9DBJ",
+          "name": "Anthropic account"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "const input = $('Parse Inbox').first().json;\nconst raw = $input.first().json.content?.[0]?.text || $input.first().json.message?.content || $input.first().json.output || '';\n\nconst synthesisMd = `---\ntype: daily-synthesis\ndate: ${input.date}\ngenerated: ${new Date().toISOString()}\n---\n\n# Síntesis Diaria — ${input.date}\n\n${raw}\n\n---\n\n## 📎 Backlinks\n- [[Daily-Inbox]]\n- [[PROJECTS/ZENTI]]\n- [[PROJECTS/Charly.io]]\n\n#síntesis-diaria\n`;\n\nconst filename = `${input.date}-sintesis.md`;\nconst filepath = `SYNTHESIS/${filename}`;\n\nreturn [{\n  json: {\n    status: 'ok',\n    date: input.date,\n    filename,\n    filepath,\n    synthesisMd\n  }\n}];"
+        "jsCode": "const input = $('Parse Inbox').first().json;\nconst resp = $input.first().json;\nconst raw = resp?.content?.[0]?.text || '';\n\nconst synthesisMd = `---\\ntype: daily-synthesis\\ndate: ${input.date}\\ngenerated: ${new Date().toISOString()}\\n---\\n\\n# Síntesis Diaria — ${input.date}\\n\\n${raw}\\n\\n---\\n\\n## 📎 Backlinks\\n- [[Daily-Inbox]]\\n- [[PROJECTS/ZENTI]]\\n- [[PROJECTS/Charly.io]]\\n\\n#síntesis-diaria\\n`;\n\nconst filename = `${input.date}-sintesis.md`;\nconst filepath = `SYNTHESIS/${filename}`;\n\nreturn [{\n  json: {\n    status: 'ok',\n    date: input.date,\n    filename,\n    filepath,\n    synthesisMd\n  }\n}];"
       },
       "name": "Format Synthesis",
       "type": "n8n-nodes-base.code",
@@ -76,23 +74,17 @@
   ],
   "connections": {
     "Webhook (Synthesis Trigger)": {
-      "main": [[{ "node": "Parse Inbox", "type": "main", "index": 0 }]]
+      "main": [[{"node": "Parse Inbox", "type": "main", "index": 0}]]
     },
     "Parse Inbox": {
-      "main": [[{ "node": "Claude Synthesize", "type": "main", "index": 0 }]]
+      "main": [[{"node": "Claude Synthesize", "type": "main", "index": 0}]]
     },
     "Claude Synthesize": {
-      "main": [[{ "node": "Format Synthesis", "type": "main", "index": 0 }]]
+      "main": [[{"node": "Format Synthesis", "type": "main", "index": 0}]]
     },
     "Format Synthesis": {
-      "main": [[{ "node": "Respond to Shortcut", "type": "main", "index": 0 }]]
+      "main": [[{"node": "Respond to Shortcut", "type": "main", "index": 0}]]
     }
   },
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "pinData": {},
-  "meta": {
-    "templateCredsSetupCompleted": false
-  }
+  "settings": {"executionOrder": "v1"}
 }

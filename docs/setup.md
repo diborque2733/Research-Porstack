@@ -58,21 +58,24 @@ _Insights capturados desde Share Sheet. Se sintetizan cada noche._
 
 **Plugins necesarios:** Advanced URI (Settings → Community Plugins → buscar "Advanced URI" → Install + Enable)
 
-### 2. n8n cloud — Import workflows
+### 2. n8n cloud — Workflows
 
 Cuenta: `zenti.app.n8n.cloud`
 
-**Capture workflow:**
-1. Home → **Import from File** → subir `n8n/capture-workflow.json`
-2. Abrir el workflow → nodo **Claude Classify** → seleccionar credencial **Anthropic** existente
-3. Click **Activate** (toggle arriba derecha)
-4. Copiar URL del webhook: debería ser `https://zenti.app.n8n.cloud/webhook/insight-capture`
+**Ya importados y activos** (deploy vía `scripts/deploy-n8n.sh`):
+- `Research Power Stack - Capture Insight` → webhook `/webhook/insight-capture`
+- `Research Power Stack - Daily Synthesis` → webhook `/webhook/insight-synthesis`
 
-**Synthesis workflow:**
-1. Import `n8n/synthesis-workflow.json`
-2. Nodo **Claude Synthesize** → credencial Anthropic
-3. Activate
-4. URL: `https://zenti.app.n8n.cloud/webhook/insight-synthesis`
+Ambos usan **HTTP Request node** contra `api.anthropic.com/v1/messages` (no el nodo langchain, que requiere parent AI Agent). Credencial: `Anthropic account` (tipo `anthropicApi`).
+
+**Modelos:**
+- Capture → `claude-sonnet-4-20250514` (clasificación barata)
+- Synthesis → `claude-opus-4-20250514` (razonamiento estratégico)
+
+**Re-deploy** (si editas los JSONs del repo):
+```bash
+bash scripts/deploy-n8n.sh
+```
 
 **Test capture desde terminal Mac:**
 ```bash
