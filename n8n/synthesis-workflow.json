@@ -1,0 +1,93 @@
+{
+  "name": "Research Power Stack - Daily Synthesis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "insight-synthesis",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Webhook (Synthesis Trigger)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 300],
+      "webhookId": "insight-synthesis"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || $input.first().json;\n\nconst inboxContent = body.inbox || body.text || '';\nconst date = body.date || new Date().toISOString().split('T')[0];\n\nconst prompt = `Eres el analista estratégico del INTELECTUAL-BRAIN de Diego (5 proyectos activos: ZENTI, Charly, Numerologia, Investment, Fieness).\\n\\nAnaliza TODOS los insights capturados el ${date} y genera una SÍNTESIS DIARIA accionable.\\n\\n# INSIGHTS DEL DÍA\\n\\n${inboxContent}\\n\\n# TU TAREA\\n\\nGenera la síntesis en markdown con esta estructura EXACTA:\\n\\n---\\n\\n## 🎯 Top 3 Insights del Día\\n\\nLos 3 insights MÁS relevantes (por score combinado de los 5 proyectos) con:\\n- Título\\n- Por qué importa\\n- Acción concreta\\n\\n## 🚀 ZENTI\\nInsights que aplican a ZENTI (evaluador CORFO/ANID/BID, multi-agente AI):\\n- Oportunidades en bullet\\n- Cambios sugeridos al producto\\n- Competidores/tech a investigar\\n\\n## 📈 CHARLY\\nInsights que aplican a Charly (SaaS aceleradoras LATAM):\\n- Growth hacks aplicables\\n- Benchmarks SaaS\\n- Decisiones pricing/product\\n\\n## 🔮 NUMEROLOGIA\\nInsights para el agente personal de numerología/astrología:\\n- Fuentes, tecnologías, patrones\\n\\n## 💰 INVESTMENT\\nInsights para el agente de inversión:\\n- Señales de mercado, frameworks, tecnologías financieras\\n\\n## 💪 FIENESS\\nInsights para entrenamiento personal (Dragon 2, karate, running):\\n- Protocolos, nutrición, recuperación\\n\\n## 🔁 Aprendizaje externo (THERMOLAB / NOA / NOROC / HOLDING)\\nInsights que aunque son de proyectos externos, pueden servir a los proyectos core (especialmente ZENTI)\\n\\n## 🔗 Conexiones Cruzadas\\n\\n¿Hay patrones entre los insights? ¿Temas recurrentes? ¿Ideas que se complementan?\\n\\n## ⚡ Acciones para Esta Semana\\n\\n3-5 acciones concretas derivadas de los insights, priorizadas. Formato:\\n- [ ] Acción (ZENTI | Charly | Numerologia | Investment | Fieness) — esfuerzo estimado\\n\\n## 🗑️ Descartar\\n\\nInsights de baja relevancia que no merecen seguimiento (si los hay).\\n\\n---\\n\\nSé DIRECTO. Sin relleno. Diego tiene 10 minutos para leer esto.`;\n\nreturn [{\n  json: {\n    inboxContent,\n    date,\n    length: inboxContent.length,\n    prompt\n  }\n}];"
+      },
+      "name": "Parse Inbox",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "anthropic-version", "value": "2023-06-01"},
+            {"name": "content-type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-opus-4-20250514\",\n  \"max_tokens\": 4096,\n  \"temperature\": 0.4,\n  \"messages\": [{\"role\": \"user\", \"content\": {{JSON.stringify($json.prompt)}}}]\n}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "options": {}
+      },
+      "name": "Claude Synthesize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [540, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "Ivm68Ihk87si9DBJ",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('Parse Inbox').first().json;\nconst resp = $input.first().json;\nconst raw = resp?.content?.[0]?.text || '';\n\nconst synthesisMd = `---\\ntype: daily-synthesis\\ndate: ${input.date}\\ngenerated: ${new Date().toISOString()}\\n---\\n\\n# Síntesis Diaria — ${input.date}\\n\\n${raw}\\n\\n---\\n\\n## 📎 Backlinks\\n- [[Daily-Inbox]]\\n- [[PROJECTS/ZENTI]]\\n- [[PROJECTS/Charly.io]]\\n\\n#síntesis-diaria\\n`;\n\nconst filename = `${input.date}-sintesis.md`;\nconst filepath = `SYNTHESIS/${filename}`;\n\nreturn [{\n  json: {\n    status: 'ok',\n    date: input.date,\n    filename,\n    filepath,\n    synthesisMd\n  }\n}];"
+      },
+      "name": "Format Synthesis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "name": "Respond to Shortcut",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [980, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (Synthesis Trigger)": {
+      "main": [[{"node": "Parse Inbox", "type": "main", "index": 0}]]
+    },
+    "Parse Inbox": {
+      "main": [[{"node": "Claude Synthesize", "type": "main", "index": 0}]]
+    },
+    "Claude Synthesize": {
+      "main": [[{"node": "Format Synthesis", "type": "main", "index": 0}]]
+    },
+    "Format Synthesis": {
+      "main": [[{"node": "Respond to Shortcut", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {"executionOrder": "v1"}
+}
