@@ -22,7 +22,7 @@ Estado al cierre de sesión (2026-04-19, modo hand-off autonomous).
 
 ### Obsidian vault
 ```
-~/Library/Mobile Documents/iCloud~md~obsidian/Documents/INTELLECTUAL-OS/
+~/Library/Mobile Documents/iCloud~md~obsidian/Documents/INTELECTUAL-BRAIN/
 ├── CAPTURE/Daily-Inbox.md          ✅ seed file
 ├── INSIGHTS/{8 categorías}/        ✅ dirs creados
 ├── SYNTHESIS/                      ✅ dir
@@ -31,7 +31,7 @@ Estado al cierre de sesión (2026-04-19, modo hand-off autonomous).
     └── Charly.io.md                ✅ con dataview query
 ```
 
-**IMPORTANTE:** abre Obsidian en el Mac UNA VEZ y apunta al vault `INTELLECTUAL-OS` para que el app lo registre. El iPhone/iPad lo detecta automáticamente via iCloud después.
+**IMPORTANTE:** abre Obsidian en el Mac UNA VEZ y apunta al vault `INTELECTUAL-BRAIN` para que el app lo registre. El iPhone/iPad lo detecta automáticamente via iCloud después.
 
 ### Repo
 - Rama: `claude/research-power-stack`

@@ -29,7 +29,7 @@ Pipeline de captura y síntesis de insights para **ZENTI** y **Charly.io**.
 
 - **n8n cloud** (`zenti.app.n8n.cloud`) — orquestación webhooks
 - **Anthropic API** — `claude-sonnet-4-6` (clasificación) + `claude-opus-4-7` (síntesis)
-- **Obsidian iOS + iCloud** — vault `INTELLECTUAL-OS`
+- **Obsidian iOS + iCloud** — vault `INTELECTUAL-BRAIN`
 - **iOS Shortcuts** — captura desde Share Sheet + automatización diaria
 
 ## Costo estimado

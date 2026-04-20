@@ -30,11 +30,11 @@ Pipeline completo para capturar insights desde móvil, clasificarlos con Claude,
 
 ### 1. Obsidian vault
 
-**Dónde:** iCloud Drive / Obsidian / INTELLECTUAL-OS/
+**Dónde:** iCloud Drive / Obsidian / INTELECTUAL-BRAIN/
 
 **Estructura mínima (crear carpetas vacías):**
 ```
-INTELLECTUAL-OS/
+INTELECTUAL-BRAIN/
 ├── CAPTURE/
 ├── INSIGHTS/
 │   ├── ai-tech/
@@ -162,7 +162,7 @@ Con uso típico (15 insights/día):
 |---|---|---|
 | Shortcut falla con "400 Bad Request" | JSON mal formado | Check `Content-Type: application/json` y estructura del body |
 | Claude devuelve texto fuera de JSON | Temperatura muy alta o contexto largo | Bajar temp a 0.2, o prompt más estricto con "SOLO JSON" |
-| Obsidian no crea el archivo | Nombre de vault incorrecto | `INTELLECTUAL-OS` es case-sensitive en URL scheme |
+| Obsidian no crea el archivo | Nombre de vault incorrecto | `INTELECTUAL-BRAIN` es case-sensitive en URL scheme |
 | Insights mal clasificados | Contexto de proyectos desactualizado | Editar prompt en n8n + commit cambio en `prompts/classify-insight.md` |
 | Síntesis genérica / poco accionable | Prompt no itera sobre ejemplos reales | Agregar 1 few-shot a `prompts/daily-synthesis.md` con output ganador |
 | Cost spike | Demasiados insights sin filtro | Agregar step "skip if relevance<3" antes de guardar |

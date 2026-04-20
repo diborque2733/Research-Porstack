@@ -23,7 +23,7 @@ Cuando Diego te comparte una URL (YouTube, Instagram, Twitter, artículo web, et
 
 1. Clasificar el insight
 2. Generar el archivo markdown
-3. Devolver un **deep link `obsidian://`** al final para que Diego solo tenga que tocarlo desde iPad/iPhone y Obsidian cree el archivo automáticamente en su vault `INTELLECTUAL-OS`.
+3. Devolver un **deep link `obsidian://`** al final para que Diego solo tenga que tocarlo desde iPad/iPhone y Obsidian cree el archivo automáticamente en su vault `INTELECTUAL-BRAIN`.
 
 ## Contexto de los 2 proyectos
 
@@ -32,7 +32,7 @@ Cuando Diego te comparte una URL (YouTube, Instagram, Twitter, artículo web, et
 
 Estructura del vault (ya existe en iCloud del iPad):
 ```
-INTELLECTUAL-OS/
+INTELECTUAL-BRAIN/
 ├── CAPTURE/Daily-Inbox.md
 ├── INSIGHTS/{categoría}/{fecha}-{slug}.md
 ├── SYNTHESIS/
@@ -102,7 +102,7 @@ tags: ["tag1", "tag2", "tag3"]
 Al final, genera un link Markdown con este formato EXACTO (URL-encoded):
 
 ```
-[📝 Guardar en Obsidian](obsidian://new?vault=INTELLECTUAL-OS&file=INSIGHTS%2F{categoria}%2F{YYYY-MM-DD}-{slug}.md&content={MARKDOWN_URL_ENCODED}&append=false)
+[📝 Guardar en Obsidian](obsidian://new?vault=INTELECTUAL-BRAIN&file=INSIGHTS%2F{categoria}%2F{YYYY-MM-DD}-{slug}.md&content={MARKDOWN_URL_ENCODED}&append=false)
 ```
 
 Donde:
@@ -159,7 +159,7 @@ Anthropic libera prompt caching para reducir hasta 90% los costos de API...
 (resto del markdown)
 ````
 
-[📝 Guardar en Obsidian](obsidian://new?vault=INTELLECTUAL-OS&file=INSIGHTS%2Fai-tech%2F2026-04-19-anthropic-lanza-prompt-caching.md&content=---%0Atitle%3A%20%22Anthropic%20lanza%20prompt%20caching%22%0A...%23cost-optimization%0A&append=false)
+[📝 Guardar en Obsidian](obsidian://new?vault=INTELECTUAL-BRAIN&file=INSIGHTS%2Fai-tech%2F2026-04-19-anthropic-lanza-prompt-caching.md&content=---%0Atitle%3A%20%22Anthropic%20lanza%20prompt%20caching%22%0A...%23cost-optimization%0A&append=false)
 
 ===== HASTA AQUÍ =====
 

@@ -75,7 +75,7 @@ en ≤3 seg el insight queda clasificado y guardado en Obsidian.
 - Buscar: **"Abrir URLs"**
 - URL: usa expresión con codificación URL:
 ```
-obsidian://new?vault=INTELLECTUAL-OS&file=[URL_ENCODE_FILEPATH]&content=[URL_ENCODE_MD_INSIGHT]&append=false
+obsidian://new?vault=INTELECTUAL-BRAIN&file=[URL_ENCODE_FILEPATH]&content=[URL_ENCODE_MD_INSIGHT]&append=false
 ```
 - En Shortcuts usa el bloque **URL** + acciones "Codificación URL" sobre cada variable antes de construir.
 
@@ -83,7 +83,7 @@ obsidian://new?vault=INTELLECTUAL-OS&file=[URL_ENCODE_FILEPATH]&content=[URL_ENC
 - Buscar: **"Abrir URLs"**
 - URL:
 ```
-obsidian://new?vault=INTELLECTUAL-OS&file=CAPTURE%2FDaily-Inbox&content=[URL_ENCODE_MD_INBOX]&append=true
+obsidian://new?vault=INTELECTUAL-BRAIN&file=CAPTURE%2FDaily-Inbox&content=[URL_ENCODE_MD_INBOX]&append=true
 ```
 
 #### Acción 11 — Feedback visual
@@ -124,13 +124,13 @@ guarda en `SYNTHESIS/{fecha}-sintesis.md`.
   - Opción A (mejor): app "Obsidian" → ver si tiene action Shortcuts para leer archivos (desde v1.4+)
   - Opción B: usa URL scheme:
 ```
-obsidian://adv-uri?vault=INTELLECTUAL-OS&filepath=CAPTURE%2FDaily-Inbox.md&commandid=open-another-file
+obsidian://adv-uri?vault=INTELECTUAL-BRAIN&filepath=CAPTURE%2FDaily-Inbox.md&commandid=open-another-file
 ```
   (Requiere plugin **Advanced URI** en Obsidian)
 
 **Alternativa sin plugin**: iOS Files app → Obsidian vault en iCloud → "Obtener archivo" directo:
 - Buscar: **"Obtener archivo"**
-- Ruta: `iCloud Drive/Obsidian/INTELLECTUAL-OS/CAPTURE/Daily-Inbox.md`
+- Ruta: `iCloud Drive/Obsidian/INTELECTUAL-BRAIN/CAPTURE/Daily-Inbox.md`
 - Guarda en variable: **INBOX_CONTENT**
 
 #### Acción 3 — POST a n8n synthesis
@@ -148,13 +148,13 @@ obsidian://adv-uri?vault=INTELLECTUAL-OS&filepath=CAPTURE%2FDaily-Inbox.md&comma
 #### Acción 5 — Escribir síntesis en Obsidian
 - **"Abrir URL"**:
 ```
-obsidian://new?vault=INTELLECTUAL-OS&file=[URL_ENCODE_SYNTHESIS_PATH]&content=[URL_ENCODE_SYNTHESIS_MD]
+obsidian://new?vault=INTELECTUAL-BRAIN&file=[URL_ENCODE_SYNTHESIS_PATH]&content=[URL_ENCODE_SYNTHESIS_MD]
 ```
 
 #### Acción 6 — Abrir la síntesis
 - **"Abrir URL"**:
 ```
-obsidian://open?vault=INTELLECTUAL-OS&file=[URL_ENCODE_SYNTHESIS_PATH]
+obsidian://open?vault=INTELECTUAL-BRAIN&file=[URL_ENCODE_SYNTHESIS_PATH]
 ```
 
 2. Guardar.
@@ -170,7 +170,7 @@ obsidian://open?vault=INTELLECTUAL-OS&file=[URL_ENCODE_SYNTHESIS_PATH]
 El Shortcut asume esta estructura en iCloud:
 
 ```
-INTELLECTUAL-OS/
+INTELECTUAL-BRAIN/
 ├── CAPTURE/
 │   └── Daily-Inbox.md
 ├── INSIGHTS/
