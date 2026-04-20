@@ -95,6 +95,20 @@ Gemini auditó ambos workflows y encontró 14 issues. Aplicados ahora:
 - **LOW** Modelos hardcoded con fecha (`claude-sonnet-4-20250514`). Alias `claude-sonnet-4-latest` serían más durables si Anthropic los publica.
 - **LOW** Timestamp de server n8n (UTC, no hora chilena). Si quieres hora local, el Shortcut debe mandar `localTime` en el body.
 
+## 🔮 Feature solicitada (siguiente sprint): Vault Advisor
+
+**Objetivo**: que Claude escanee el vault y diga "de todo lo capturado, esto es lo que conviene usar en ZENTI/Charly esta semana + recomendaciones".
+
+**Arquitectura propuesta**:
+- Script local `scripts/vault-advisor.sh` que:
+  1. Lee todos los `.md` de `INSIGHTS/` de la última N semanas (default 4)
+  2. Envía a Claude Opus 4.7 en chunks con prompt caching (reutiliza contexto)
+  3. Devuelve: top 10 insights accionables, oportunidades cruzadas, patterns repetidos, acciones sugeridas por proyecto
+  4. Escribe resultado a `SYNTHESIS/advisor-{fecha}.md`
+- O como workflow n8n con trigger manual + el repo clonado como storage (evita problemas de iCloud read).
+
+**Cuándo implementar**: cuando haya ≥30 insights en el vault (hoy hay 6). Antes no tiene material suficiente para recomendar bien.
+
 ## 🎯 Siguiente iteración (futuro)
 
 - [ ] YouTube transcript fetch antes del classify (más contexto = mejor clasificación)
